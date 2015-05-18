@@ -1,0 +1,85 @@
+﻿@model IEnumerable<BlobViewModel>
+
+<h2>@ViewBag.ContainerName</h2>
+
+<div id="list-area">
+    @{ Html.RenderPartial("_List", Model); }
+</div>
+
+<div>
+    @Html.ActionLink("Back", "Index", "Container", null, new {@class = "btn btn-primary"})
+</div>
+
+@section scripts {
+    <script>
+        $(function() {
+            $(document).on("click", ".btn-pagination", function() {
+                var self = this;
+                var url = $(self).data("url");
+
+                $.get(url, function(data) {
+                    $("#list-area").html(data);
+                });
+            });
+
+            $(document).on("click", "a.btn-metadata", function() {
+                var $self = $(this);
+                var no = $self.data("no");
+                if (no === null || no === undefined) {
+                    $self.parent("div").remove();
+                } else {
+                    var html = '<div class="form-inline"> ' +
+                        '<input type="text" name="Metadata[' +
+                        no +
+                        '].Key" value="" class="form-control" required /> ' +
+                        '<input type="text" name="Metadata[' +
+                        no +
+                        '].Value" value="" class="form-control" required /> ' +
+                        '<a href="#metadata-area" class="btn btn-default btn-metadata"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span></a>' +
+                        '</div>';
+
+                    $("#metadata-area").append(html);
+                    no++;
+                    $(self).data("no", no);
+                }
+            });
+
+            $(document).on("submit", "form", function(e) {
+                e.preventDefault();
+                var $form = $(this);
+                var $button = $form.find('input[type=submit]');
+
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: $form.attr('method'),
+                    data: $form.serialize(),
+                    beforeSend: function(xhr, settings) {
+                        $button.attr('disabled', true);
+                    },
+                    complete: function(xhr, textStatus) {
+                        $button.attr('disabled', false);
+                    },
+                    success: function(result, textStatus, xhr) {
+                        if (result) {
+                            $("#container").html(result);
+                        } else {
+                            $('#modal').modal('hide');
+                            refresh();
+                        }
+                    },
+                    error: function(xhr, textStatus, error) {
+                    }
+                });
+            });
+
+            var refresh = function() {
+                var url = $("#refresh-list").val();
+
+                $.get(url, function(data) {
+                    $("#list-area").html(data);
+                });
+
+            }
+        });
+    </script>
+}

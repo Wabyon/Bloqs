@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{C21310A4-DA8F-466E-84BD-D88E172E40BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bloqs.Core", "src\Bloqs.Core\Bloqs.Core.csproj", "{2CC06795-BF68-4E97-9158-3FC94E55B66F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bloqs.HttpClient", "src\Bloqs.HttpClient\Bloqs.HttpClient.csproj", "{7EB0ACC0-F7D5-4B1D-B8D5-43908F0BDA9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bloqs.WebApi", "src\Bloqs.WebApi\Bloqs.WebApi.csproj", "{F4840B23-475D-4277-9694-FA7B0F4D1C53}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bloqs.WebApp", "src\Bloqs.WebApp\Bloqs.WebApp.csproj", "{6514CCA0-06F0-4C2C-AD45-373C41B1775D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{080549C8-F896-4388-BD02-83B1B4ADD594}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2CC06795-BF68-4E97-9158-3FC94E55B66F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CC06795-BF68-4E97-9158-3FC94E55B66F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CC06795-BF68-4E97-9158-3FC94E55B66F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CC06795-BF68-4E97-9158-3FC94E55B66F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EB0ACC0-F7D5-4B1D-B8D5-43908F0BDA9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EB0ACC0-F7D5-4B1D-B8D5-43908F0BDA9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EB0ACC0-F7D5-4B1D-B8D5-43908F0BDA9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EB0ACC0-F7D5-4B1D-B8D5-43908F0BDA9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4840B23-475D-4277-9694-FA7B0F4D1C53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4840B23-475D-4277-9694-FA7B0F4D1C53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4840B23-475D-4277-9694-FA7B0F4D1C53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4840B23-475D-4277-9694-FA7B0F4D1C53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6514CCA0-06F0-4C2C-AD45-373C41B1775D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6514CCA0-06F0-4C2C-AD45-373C41B1775D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6514CCA0-06F0-4C2C-AD45-373C41B1775D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6514CCA0-06F0-4C2C-AD45-373C41B1775D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2CC06795-BF68-4E97-9158-3FC94E55B66F} = {C21310A4-DA8F-466E-84BD-D88E172E40BF}
+		{7EB0ACC0-F7D5-4B1D-B8D5-43908F0BDA9D} = {C21310A4-DA8F-466E-84BD-D88E172E40BF}
+		{F4840B23-475D-4277-9694-FA7B0F4D1C53} = {C21310A4-DA8F-466E-84BD-D88E172E40BF}
+		{6514CCA0-06F0-4C2C-AD45-373C41B1775D} = {C21310A4-DA8F-466E-84BD-D88E172E40BF}
+	EndGlobalSection
+EndGlobal

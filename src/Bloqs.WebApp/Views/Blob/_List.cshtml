@@ -1,0 +1,69 @@
+﻿@model IEnumerable<BlobViewModel>
+
+<div class="btn-group">
+    @if (ViewBag.HasPreview)
+    {
+        <button class="btn btn-default btn-pagination" data-url="@Url.Action("GetList", new {container = ViewBag.ContainerName, skip = (ViewBag.Skip - 10), take = 10})"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
+    }
+    else
+    {
+        <button class="btn btn-default disabled"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
+    }
+    @if (ViewBag.HasNext)
+    {
+        <button class="btn btn-default btn-pagination" data-url="@Url.Action("GetList", new {container = ViewBag.ContainerName, skip = (ViewBag.Skip + 10), take = 10})"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
+    }
+    else
+    {
+        <button class="btn btn-default disabled"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
+    }
+</div>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ContentType)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.LastModifiedUtcDateTime)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SizeString)
+        </th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ContentType)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.LastModifiedUtcDateTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.SizeString)
+            </td>
+            <td>
+                @Html.ActionLink("Download", "Download", "Blob", new { containerName = ViewBag.ContainerName, name = item.Name }, new { @class = "btn btn-xs btn-info" })
+            </td>
+            <td>
+                <button class="btn btn-xs btn-primary btn-partial-view" data-url="@Url.Action("Edit", new { containerName = ViewBag.ContainerName, name = item.Name })"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
+            </td>
+            <td>
+                <button class="btn btn-xs btn-danger btn-partial-view" data-url="@Url.Action("Delete", new { containerName = ViewBag.ContainerName, name = item.Name })"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+            </td>
+        </tr>
+    }
+</table>
+<div>
+    <input type="hidden" id="refresh-list" value="@Url.Action("GetList", new { containerName = ViewBag.ContainerName, skip = ViewBag.Skip, take = ViewBag.Take })" />
+</div>

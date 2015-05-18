@@ -1,0 +1,53 @@
+﻿@model IEnumerable<ContainerViewModel>
+<div class="btn-group">
+    @if (ViewBag.HasPreview)
+    {
+        <button class="btn btn-default btn-pagination" data-url="@Url.Action("GetList", new {skip = (ViewBag.Skip - 10), take = 10})"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
+    }
+    else
+    {
+        <button class="btn btn-default disabled"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
+    }
+    @if (ViewBag.HasNext)
+    {
+        <button class="btn btn-default btn-pagination" data-url="@Url.Action("GetList", new {skip = (ViewBag.Skip + 10), take = 10})"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
+    }
+    else
+    {
+        <button class="btn btn-default disabled"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
+    }
+</div>
+<table class="table">
+    <tr>
+        <th>@Html.DisplayNameFor(model => model.Name)</th>
+        <th>@Html.DisplayNameFor(model => model.Accessibility)</th>
+        <th>@Html.DisplayNameFor(model => model.Owner)</th>
+        <th>@Html.DisplayNameFor(model => model.LastModifiedUtcDateTime)</th>
+        <th></th>
+        <th></th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td><a href="@Url.Action("Index","Blob", new { containerName = item.Name })">@Html.DisplayFor(modelItem => item.Name)</a></td>
+            <td>@Html.DisplayFor(modelItem => item.Accessibility)</td>
+            <td>@Html.DisplayFor(modelItem => item.Owner)</td>
+            <td>@Html.DisplayFor(modelItem => item.LastModifiedUtcDateTime)</td>
+            <td>
+                <button class="btn btn-xs btn-info btn-partial-view" data-url="@Url.Action("MaintainKey", new {name = item.Name})">Access Key</button>
+            </td>
+            <td>
+                <button class="btn btn-xs btn-primary btn-partial-view" data-url="@Url.Action("Edit", new {name = item.Name})"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
+            </td>
+            <td>
+                <button class="btn btn-xs btn-danger btn-partial-view" data-url="@Url.Action("Delete", new {name = item.Name})"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+            </td>
+        </tr>
+    }
+
+</table>
+<div>
+    <input type="hidden" id="refresh-list" value="@Url.Action("GetList", new {skip = ViewBag.Skip, take = ViewBag.Take})" />
+</div>
