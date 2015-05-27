@@ -2,9 +2,9 @@
 
 <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <h4 class="modal-title">Edit</h4>
+    <h4 class="modal-title">BLOBとメタデータの編集</h4>
 </div>
-@using (Html.BeginForm("Edit", "Blob", new { containerName = ViewBag.ContainerName, name = Model.Name }, FormMethod.Post, new { id = "form-edit" }))
+@using (Html.BeginForm("Edit", "Blob", new { id = Model.Id }, FormMethod.Post, new { id = "form-edit" }))
 {
     @Html.AntiForgeryToken()
     <div class="modal-body">
@@ -55,7 +55,6 @@
         </div>
         <div class="form-group">
             @Html.LabelFor(model => model.Size)
-            @Html.HiddenFor(model => model.Length)
             <p>@Html.DisplayFor(model => model.Size)</p>
         </div>
         <div>
@@ -70,17 +69,17 @@
         <div class="form-inline">
             <input type="text" name="Metadata[@i].Key" value="@metadata.Key" class="form-control" required />
             <input type="text" name="Metadata[@i].Value" value="@metadata.Value" class="form-control" required />
-            <a href="#metadata-area" class="btn btn-default btn-metadata"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span></a>
+            <button type="button" class="btn btn-default btn-metadata"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span></button>
         </div>
         i += 1;
     }
         }
     </div>
-                <a href="#metadata-area" class="btn btn-default btn-metadata" data-no="@i"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a>
-            }
+    <button type="button" class="btn btn-default btn-metadata" data-no="@i"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></button>
+}
         </div>
     </div>
     <div class="modal-footer">
-        <input type="submit" value="Save" class="btn btn-default" />
+        <button class="btn btn-lg btn-primary"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
     </div>
 }

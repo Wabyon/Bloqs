@@ -2,9 +2,9 @@
 
 <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <h4 class="modal-title">@Model.Name</h4>
+    <h4 class="modal-title">"@Model.Name" の編集</h4>
 </div>
-@using (Html.BeginForm("Edit", "Container", new {name = Model.Name}))
+@using (Html.BeginForm("Edit", "Container", new {id = Model.Id}, FormMethod.Post, new {autocomplete = "off"}))
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.Name)
@@ -16,8 +16,29 @@
                 @Html.ValidationMessageFor(model => model.IsPublic, "", new {@class = "text-danger"})
             </label>
         </div>
+        <div>
+            @Html.LabelFor(model => model.Metadata)
+            @Html.ValidationMessageFor(model => model.Metadata, "", new { @class = "text-danger" })
+            @{
+    var i = 0;
+    <div id="metadata-area">
+        @{
+    foreach (var metadata in Model.Metadata)
+    {
+        <div class="form-inline">
+            <input type="text" name="Metadata[@i].Key" value="@metadata.Key" class="form-control" required />
+            <input type="text" name="Metadata[@i].Value" value="@metadata.Value" class="form-control" required />
+            <button type="button" class="btn btn-default btn-metadata"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span></button>
+        </div>
+        i += 1;
+    }
+        }
+    </div>
+    <button type="button" class="btn btn-default btn-metadata" data-no="@i"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></button>
+}
+        </div>
     </div>
     <div class="modal-footer">
-        <input type="submit" value="Save" class="btn btn-default" />
+        <button class="btn btn-lg btn-primary"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
     </div>
 }

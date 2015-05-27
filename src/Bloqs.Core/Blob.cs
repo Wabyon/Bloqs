@@ -1,37 +1,30 @@
-﻿using System.Collections.Generic;
+﻿using System;
 
 namespace Bloqs
 {
-    public class Blob
+    /// <summary></summary>
+    public class Blob : BlobAttributes
     {
-        private readonly BlobAttribute _attribute;
-
-        public string Name
-        {
-            get { return _attribute.Name; }
-            set { _attribute.Name = value; }
-        }
-
+        /// <summary></summary>
         public byte[] Image { get; set; }
 
-        public BlobProperties Properties
-        {
-            get { return _attribute.Properties; }
-            internal set { _attribute.Properties = value; }
-        }
-
-        public IDictionary<string, string> Metadata
-        {
-            get { return _attribute.Metadata; }
-        }
-
-        public Blob() : this(new BlobAttribute())
+        /// <summary></summary>
+        public Blob()
+            : this(new BlobAttributes())
         {
         }
 
-        public Blob(BlobAttribute attribute)
+        /// <summary></summary>
+        public Blob(BlobAttributes attributes)
         {
-            _attribute = attribute;
+            if (attributes == null) throw new ArgumentNullException("attributes");
+
+            Container = attributes.Container;
+            Id = attributes.Id;
+            Name = attributes.Name;
+            Properties = attributes.Properties;
+            Storage = attributes.Storage;
+            Metadata.Add(attributes.Metadata);
         }
     }
 }

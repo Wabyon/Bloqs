@@ -1,125 +1,115 @@
 ﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Bloqs.Models
 {
-    public class ContainerCreateModel
+    public class ContainerIndexModel
     {
-        [Required]
-        [RegularExpression(Container.UsableNamePattern, ErrorMessage = "Is only half-width alphanumeric characters and hyphens (-) can be used")]
-        [DisplayName("Container Name")]
+        public string Id { get; set; }
+
+        public string AccountId { get; set; }
+
+        public string AccountName { get; set; }
+
+        [DisplayName(@"名前")]
         public string Name { get; set; }
 
-        [DisplayName("Anyone can download blobs in this container.")]
         public bool IsPublic { get; set; }
 
-        public Container ToContainer(string owner)
+        [DisplayName(@"アクセシビリティ")]
+        public string Accessibility
         {
-            var container = new Container
-            {
-                Name = Name,
-                IsPublic = IsPublic,
-                Owner = owner,
-                CreatedUtcDateTime = DateTime.UtcNow,
-                LastModifiedUtcDateTime = DateTime.UtcNow,
-                PrimaryAccessKey = ContainerKeyEditModel.CreateNewAccessKeyString(),
-                SecondaryAccessKey = ContainerKeyEditModel.CreateNewAccessKeyString(),
-            };
+            get { return IsPublic ? "公開" : "非公開"; }
+        }
 
-            return container;
+        [DisplayName("作成時刻 (UTC)")]
+        public DateTime CreatedUtcDateTime { get; set; }
+
+        [DisplayName("最終変更時刻 (UTC)")]
+        public DateTime LastModifiedUtcDateTime { get; set; }
+
+        [DisplayName(@"URL")]
+        public string ContainerApiAddress { get; set; }
+
+        [DisplayName("メタデータ")]
+        public Metadata Metadata { get; set; }
+    }
+
+    public class ContainerCreateModel
+    {
+        public string Id { get; set; }
+
+        public string AccountId { get; set; }
+
+        [Required]
+        [RegularExpression(@"[0-9a-zA-Z-]+", ErrorMessage = "Is only half-width alphanumeric characters and hyphens (-) can be used")]
+        [DisplayName("コンテナ名")]
+        public string Name { get; set; }
+
+        [DisplayName("コンテナ内のBLOBを誰でもダウンロードできるようにする。")]
+        public bool IsPublic { get; set; }
+
+        [DisplayName("メタデータ")]
+        public Metadata Metadata { get; private set; }
+
+        public ContainerCreateModel()
+        {
+            Metadata = new Metadata();
         }
     }
     
     public class ContainerEditModel
     {
+        private readonly Metadata _metadata = new Metadata();
+
+        public string Id { get; set; }
+
+        public string AccountId { get; set; }
+
         [ReadOnly(true)]
-        [DisplayName("Container Name")]
+        [DisplayName("コンテナ名")]
         public string Name { get; set; }
 
-        [DisplayName("Anyone can download blobs in this container.")]
+        [DisplayName("コンテナ内のBLOBを誰でもダウンロードできるようにする。")]
         public bool IsPublic { get; set; }
-    }
 
-    public class ContainerKeyEditModel
-    {
-        [ReadOnly(true)]
-        [DisplayName("Container Name")]
-        public string Name { get; set; }
-
-        [Required]
-        [DisplayName("Primary Access Key")]
-        public string PrimaryAccessKey { get; set; }
-
-        [Required]
-        [DisplayName("Secondary Access Key")]
-        public string SecondaryAccessKey { get; set; }
-
-        public static string CreateNewAccessKeyString()
+        [DisplayName("メタデータ")]
+        public Metadata Metadata
         {
-            var sha = SHA256.Create();
-            var byteValue = Encoding.UTF8.GetBytes(Guid.NewGuid().ToString());
-            var hash = sha.ComputeHash(byteValue);
-
-            var buf = new StringBuilder();
-
-            foreach (var t in hash)
-            {
-                buf.AppendFormat("{0:x2}", t);
-            }
-
-            return buf.ToString();
+            get { return _metadata; }
         }
     }
 
-    public class ContainerViewModel
+    public class ContainerDeleteModel
     {
-        [DisplayName("Container Name")]
+        private readonly Metadata _metadata = new Metadata();
+
+        public string Id { get; set; }
+
+        public string AccountId { get; set; }
+
+        [DisplayName("コンテナ名")]
         public string Name { get; set; }
 
-        [DisplayName("Accessibility")]
         public bool IsPublic { get; set; }
 
-        [DisplayName("Accessibility")]
+        [DisplayName("アクセシビリティ")]
         public string Accessibility
         {
-            get { return IsPublic ? "Public" : "Private"; }
+            get { return IsPublic ? "公開" : "非公開"; }
         }
 
-        [DisplayName("Owner")]
-        public string Owner { get; set; }
-
-        [DisplayName("Created Date (UTC)")]
+        [DisplayName("作成時刻 (UTC)")]
         public DateTime CreatedUtcDateTime { get; set; }
 
-        [DisplayName("Last Updated Date (UTC)")]
+        [DisplayName("最終変更時刻 (UTC)")]
         public DateTime LastModifiedUtcDateTime { get; set; }
 
-        public ContainerViewModel(Container container)
+        [DisplayName("メタデータ")]
+        public Metadata Metadata
         {
-            Name = container.Name;
-            IsPublic = container.IsPublic;
-            Owner = container.Owner;
-            CreatedUtcDateTime = container.CreatedUtcDateTime;
-            LastModifiedUtcDateTime = container.LastModifiedUtcDateTime;
+            get { return _metadata; }
         }
-    }
-
-    public class ContainerDeleteModel : ContainerViewModel
-    {
-        public ContainerDeleteModel() : base(new Container())
-        {
-        }
-
-        public ContainerDeleteModel(Container container) : base(container)
-        {
-        }
-
-        [Required]
-        [DisplayName("Please type in the name of the container to confirm.")]
-        [Compare("Name", ErrorMessage = "Container name and confirm name do not match.")]
-        public string ConfirmName { get; set; }
     }
 }

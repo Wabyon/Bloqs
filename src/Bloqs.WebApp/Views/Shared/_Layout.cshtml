@@ -18,10 +18,14 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("Bloqs", "Index", "Container", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("Bloqs", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
-                <p class="nav navbar-text navbar-right">@User.Identity.Name</p>
+                <ul class="nav navbar-nav">
+                    <li>@Html.ActionLink("アカウント", "Index", "Account")</li>
+                    <li>@Html.ActionLink("ストレージ", "Index", "Storage")</li>
+                    @*<li>@Html.ActionLink("共有ストレージ", "CommonStorageIndex", "Storage")</li>*@
+                </ul>
             </div>
         </div>
     </div>
@@ -32,28 +36,17 @@
             <p>&copy; @DateTime.Now.Year - Wabyon</p>
         </footer>
     </div>
-
-    <div id="modal" class="modal" tabindex="-1" role="dialog">
+    <div id="error-modal" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content" id="container">
+            <div class="modal-content">
+                <div id="error-modal-body" class="modal-body">
+                </div>
             </div>
         </div>
     </div>
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
-    <script>
-        $(function () {
-            $(document).on("click", ".btn-partial-view", function () {
-                var self = this;
-                var url = $(self).data("url");
-                $.get(url, function(data) {
-                    $("#container").html(data);
-                    $("#modal").modal("show");
-                    $("input:text:visible:not([readonly]):first", ".modal-body").focus();
-                });
-            });
-        });
-    </script>
+    @Scripts.Render("~/bundles/bloqs")
     @RenderSection("scripts", false)
 </body>
 </html>

@@ -1,33 +1,48 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
+using System.IO;
 using System.Net;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
+using AutoMapper;
 using Bloqs.Data;
+using Bloqs.Data.Commands;
+using Bloqs.Filters;
 using Bloqs.Models;
 
 namespace Bloqs.Controllers
 {
+    [RoutePrefix("accounts/{accountName}/containers/{containerName}/blobs")]
     [Authorize]
     public class BlobController : Controller
     {
-        private readonly ContainerRepository _containerRepository = new ContainerRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
-        private readonly BlobRepository _blobRepository = new BlobRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
-        
-        [Route("blobs/{containerName}")]
+        private readonly AccountDbCommand _accountDbCommand =
+            new AccountDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+
+        private readonly ContainerDbCommand _containerDbCommand =
+            new ContainerDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+
+        private readonly BlobDbCommand _blobDbCommand =
+            new BlobDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+
+        [NoCache]
+        [Route("")]
         [HttpGet]
-        public async Task<ActionResult> Index(string containerName)
+        public async Task<ActionResult> Index(string accountName, string containerName)
         {
-            var container = await _containerRepository.FindByNameAsync(containerName);
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            var container = await _containerDbCommand.FindAsync(account, containerName);
             if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var blobs = await _blobRepository.GetAttributeListAync(container.Id, 0, 10);
-            var count = await _blobRepository.CountAllAync(container.Id);
+            var count = await _blobDbCommand.CountAsync(container);
+            var blobs = await _blobDbCommand.GetAttributesListAsync(container, 0, 10);
 
+            ViewBag.AccountName = container.Account.Name;
             ViewBag.ContainerName = container.Name;
             ViewBag.Skip = 0;
             ViewBag.Take = 10;
@@ -35,135 +50,232 @@ namespace Bloqs.Controllers
             ViewBag.HasNext = !(count <= 10);
             ViewBag.HasPreview = false;
 
-            return View(blobs.Select(x => new BlobViewModel(x)));
+            return View(Mapper.Map<IEnumerable<BlobIndexModel>>(blobs));
         }
 
-        [Route("blobs/{containerName}/list/{skip}/{take}")]
+        [NoCache]
+        [Route("list")]
         [HttpGet]
-        public async Task<ActionResult> GetList(string containerName, int skip, int take)
+        public async Task<ActionResult> List(string accountName, string containerName, int skip, int take)
         {
-            var container = await _containerRepository.FindByNameAsync(containerName);
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            var container = await _containerDbCommand.FindAsync(account, containerName);
             if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var blobs = await _blobRepository.GetAttributeListAync(container.Id, skip, take);
-            var count = await _blobRepository.CountAllAync(container.Id);
+            var count = await _blobDbCommand.CountAsync(container);
+            var blobs = await _blobDbCommand.GetAttributesListAsync(container, skip, take);
 
-            ViewBag.ContainerName = container.Name;
             ViewBag.Skip = skip;
             ViewBag.Take = take;
             ViewBag.TotalCount = count;
             ViewBag.HasNext = !(count <= skip + take);
             ViewBag.HasPreview = (skip != 0);
 
-            return PartialView("_List", blobs.Select(x => new BlobViewModel(x)));
+            return PartialView("_List", Mapper.Map<IEnumerable<BlobIndexModel>>(blobs));
         }
 
-        [Route("blobs/{containerName}/{name}/edit")]
+        [NoCache]
+        [Route("upload")]
         [HttpGet]
-        public async Task<ActionResult> Edit(string containerName, string name)
+        public async Task<ActionResult> Upload(string accountName, string containerName)
         {
-            var container = await _containerRepository.FindByNameAsync(containerName);
-            if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var blob = await _blobRepository.GetAttributeAsync(container.Id, name);
+            var container = await _containerDbCommand.FindAsync(account, containerName);
+            if (container == null) return HttpNotFound();
+
+            ViewBag.AccountName = container.Account.Name;
+            ViewBag.ContainerName = container.Name;
+            return View("Upload");
+        }
+
+        [NoCache]
+        [Route("upload")]
+        [HttpPost]
+        public async Task<ActionResult> UploadImage(string accountName, string containerName)
+        {
+            ViewBag.AccountName = accountName;
+            ViewBag.ContainerName = containerName;
+
+            if (Request.Files.Count == 0) return View("Upload");
+            var file = Request.Files[0];
+            if (file == null) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            if (string.IsNullOrWhiteSpace(file.FileName)) return View("Upload");
+
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            var container = await _containerDbCommand.FindAsync(account, containerName);
+            if (container == null) return HttpNotFound();
+
+            var image = new byte[file.ContentLength];
+            var fileName = new FileInfo(file.FileName).Name;
+            var contentType = MimeMapping.GetMimeMapping(fileName);
+            await file.InputStream.ReadAsync(image, 0, file.ContentLength);
+
+            var attributes = await _blobDbCommand.GetAttributesAsync(container, fileName);
+
+            Blob blob;
+
+            if (attributes != null)
+            {
+                blob = new Blob(attributes)
+                {
+                    Image = image,
+                    Properties =
+                    {
+                        ContentType = contentType,
+                        LastModifiedUtcDateTime = DateTime.UtcNow,
+                        Length = file.ContentLength
+                    },
+                };
+            }
+            else
+            {
+                blob = new Blob(container.CreateBlobAttributes(fileName))
+                {
+                    Image = image,
+                    Properties =
+                    {
+                        ContentType = contentType,
+                        LastModifiedUtcDateTime = DateTime.UtcNow,
+                        Length = file.ContentLength
+                    },
+                };
+            }
+
+            await _blobDbCommand.SaveAsync(blob);
+
+            return RedirectToAction("Index");
+        }
+
+        [NoCache]
+        [Route("{id}/detail")]
+        [HttpGet]
+        public async Task<ActionResult> Detail(string accountName, string containerName, string id)
+        {
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            var container = await _containerDbCommand.FindAsync(account, containerName);
+            if (container == null) return HttpNotFound();
+
+            var blob = await _blobDbCommand.GetAttributesAsync(id);
             if (blob == null) return HttpNotFound();
 
             ViewBag.ContainerName = container.Name;
-            return PartialView("_Edit", new BlobEditModel(blob));
+            return PartialView("_Detail", Mapper.Map<BlobIndexModel>(blob));
         }
 
-        [Route("blobs/{containerName}/{name}/edit")]
-        [HttpPost]
-        public async Task<ActionResult> Edit(string containerName, BlobEditModel model)
+        [NoCache]
+        [Route("{id}/edit")]
+        [HttpGet]
+        public async Task<ActionResult> Edit(string accountName, string containerName, string id)
         {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.ContainerName = containerName;
-                return PartialView("_Edit", model);
-            }
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            if (model == null) throw new ArgumentNullException("model");
-
-            var container = await _containerRepository.FindByNameAsync(containerName);
+            var container = await _containerDbCommand.FindAsync(account, containerName);
             if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var target = await _blobRepository.GetAttributeAsync(container.Id, model.Name);
+            var blob = await _blobDbCommand.GetAttributesAsync(id);
+            if (blob == null) return HttpNotFound();
+
+            ViewBag.ContainerName = container.Name;
+            return PartialView("_Edit", Mapper.Map<BlobEditModel>(blob));
+        }
+
+        [NoCache]
+        [Route("{id}/edit")]
+        [HttpPost]
+        public async Task<ActionResult> Edit(string accountName, string containerName, string id, BlobEditModel model)
+        {
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            var container = await _containerDbCommand.FindAsync(account, containerName);
+            if (container == null) return HttpNotFound();
+
+            if (!ModelState.IsValid) return PartialView("_Edit", model);
+
+            var target = await _blobDbCommand.GetAttributesAsync(id);
             if (target == null) return HttpNotFound();
 
-            target.Properties.CacheControl = model.CacheControl;
-            target.Properties.ContentDisposition = model.ContentDisposition;
-            target.Properties.ContentEncoding = model.ContentEncoding;
-            target.Properties.ContentLanguage = model.ContentLanguage;
-            target.Properties.ContentType = model.ContentType;
+            Mapper.Map(model, target);
             target.Properties.LastModifiedUtcDateTime = DateTime.UtcNow;
-            target.Properties.ETag = CreateETag(target.Properties.LastModifiedUtcDateTime.ToString("O"));
 
-            target.Metadata.Clear();
-            foreach (var metadata in model.Metadata)
-            {
-                target.Metadata.Add(metadata);
-            }
-
-            await _blobRepository.UpdateAttributeAsync(container.Id, target);
+            await _blobDbCommand.UpdateAttributesAsync(target);
 
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
-        [Route("blobs/{containerName}/{name}/delete")]
+        [NoCache]
+        [Route("{id}/delete")]
         [HttpGet]
-        public async Task<ActionResult> Delete(string containerName, string name)
+        public async Task<ActionResult> Delete(string accountName, string containerName, string id)
         {
-            var container = await _containerRepository.FindByNameAsync(containerName);
-            if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var blob = await _blobRepository.GetAttributeAsync(container.Id, name);
+            var container = await _containerDbCommand.FindAsync(account, containerName);
+            if (container == null) return HttpNotFound();
+
+            var blob = await _blobDbCommand.GetAttributesAsync(id);
             if (blob == null) return HttpNotFound();
 
-            ViewBag.ContainerName = container.Name;
-            return PartialView("_Delete", new BlobViewModel(blob));
+            return PartialView("_Delete", Mapper.Map<BlobDeleteModel>(blob));
         }
 
-        [Route("blobs/{containerName}/{name}/delete")]
+        [NoCache]
+        [Route("{id}/delete")]
         [HttpPost]
-        public async Task<ActionResult> DeleteBlob(string containerName, string name)
+        public async Task<ActionResult> Delete(string accountName, string containerName, string id, BlobDeleteModel model)
         {
-            var container = await _containerRepository.FindByNameAsync(containerName);
-            if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var target = await _blobRepository.GetAttributeAsync(container.Id, name);
+            var container = await _containerDbCommand.FindAsync(account, containerName);
+            if (container == null) return HttpNotFound();
+
+            if (!ModelState.IsValid) return PartialView("_Delete", model);
+
+            var target = await _blobDbCommand.GetAttributesAsync(id);
             if (target == null) return HttpNotFound();
 
-            await _blobRepository.DeleteAsync(container.Id, name);
+            await _blobDbCommand.DeleteAsync(id);
 
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
-        [Route("blobs/{containerName}/{name}/download")]
+        [NoCache]
+        [Route("{id}/download")]
         [HttpGet]
-        public async Task<ActionResult> Download(string containerName, string name)
+        public async Task<ActionResult> Download(string accountName, string containerName, string id)
         {
-            var container = await _containerRepository.FindByNameAsync(containerName);
-            if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var target = await _blobRepository.GetAsync(container.Id, name);
+            var container = await _containerDbCommand.FindAsync(account, containerName);
+            if (container == null) return HttpNotFound();
+
+            var target = await _blobDbCommand.FindAsync(id);
             if (target == null) return HttpNotFound();
 
-            return File(target.Image, target.Properties.ContentType, target.Name);
-        }
+            var contentType = target.Properties.ContentType ?? "application/octet-stream";
 
-        private static string CreateETag(string s)
-        {
-            var provider = new SHA256CryptoServiceProvider();
-            var hash = provider.ComputeHash(Encoding.UTF8.GetBytes(s + Guid.NewGuid()));
-            var num = BitConverter.ToInt64(hash, 0);
-
-            return string.Format("0x{0}", num.ToString("X"));
+            return File(target.Image, contentType, target.Name);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,10 +8,10 @@ namespace Bloqs.Http.Net
 {
     public sealed class Blob
     {
-        internal BloqsClient Client { get; set; }
-
-        private readonly IDictionary<string, string> _metadata = new Dictionary<string, string>();
-        private readonly BlobProperties _properties = new BlobProperties();
+        private readonly Client _client;
+        private readonly Container _container;
+        private IDictionary<string, string> _metadata = new Dictionary<string, string>();
+        private BlobProperties _properties = new BlobProperties();
 
         public string Name { get; set; }
 
@@ -26,17 +25,14 @@ namespace Bloqs.Http.Net
             get { return _metadata; }
         }
 
-        internal Blob()
-        {
-        }
+        internal Container Container { get { return _container; } }
 
-        internal Blob(BloqsClient client)
+        internal Blob(Client client, Container container)
         {
             if (client == null) throw  new ArgumentNullException("client");
-            Client = client;
+            _client = client;
+            _container = container;
         }
-
-        public Uri Url { get; internal set; }
 
         public Task DownloadToStreamAsync(Stream target)
         {
@@ -45,7 +41,7 @@ namespace Bloqs.Http.Net
 
         public Task DownloadToStreamAsync(Stream target, CancellationToken cancellationToken)
         {
-            return Client.DownloadToStreamAsync(this, target, cancellationToken);
+            return _client.DownloadBlobToStreamAsync(this, target, cancellationToken);
         }
 
         public Task UploadFromByteArrayAsync(byte[] buffer, int index, int count)
@@ -55,8 +51,30 @@ namespace Bloqs.Http.Net
 
         public Task UploadFromByteArrayAsync(byte[] buffer, int index, int count, CancellationToken cancellationToken)
         {
-            _properties.Length = buffer.Skip(index).Take(count).Count();
-            return Client.UploadFromByteArrayAsync(this, buffer, index, count, cancellationToken);
+            return _client.UploadBlobFromByteArrayAsync(this, buffer, index, count, cancellationToken);
+        }
+
+        internal class ResponseModel
+        {
+            public string Name { get; set; }
+            public BlobProperties.ResponseModel Properties { get; set; }
+            public Dictionary<string,string> Metadata { get; set; }
+
+            public ResponseModel()
+            {
+                Metadata = new Dictionary<string, string>();
+            }
+
+            public Blob ToModel(Client client, Container container)
+            {
+                var blob = new Blob(client, container)
+                {
+                    Name = Name,
+                    _properties = Properties.ToModel(),
+                    _metadata = Metadata,
+                };
+                return blob;
+            }
         }
     }
 }

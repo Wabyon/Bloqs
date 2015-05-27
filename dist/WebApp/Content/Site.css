@@ -1,0 +1,49 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+dl.wrapper1 {
+    margin: 0;
+    padding: 0.5em;
+    width: 100%;
+    font-size: 1em;
+}
+
+dt {
+    margin: 0;
+    padding: 0.5em;
+    font-weight: bold;
+    background-color: #e0e0e0;
+}
+
+dd {
+    margin: 0;
+    padding: 1.0em;
+    padding-top: .5em;
+    padding-bottom: .5em;
+}
+
+    dd .div1 {
+        padding-left: .5em;
+        border-left: 1px solid #333;
+        font-size: .9em;
+        clear: both;
+    }
+
+    dd .div2 {
+        color: #900;
+        font-size: .76em;
+        margin-top: .5em;
+        margin-bottom: .5em;
+        clear: both;
+    }

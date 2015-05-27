@@ -1,0 +1,86 @@
+﻿@model BlobEditModel
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">BLOBとメタデータの編集</h4>
+</div>
+@using (Html.BeginForm("Edit", "Blob", new { id = Model.Id }, FormMethod.Post, new { id = "form-edit" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="modal-body">
+        <div class="form-group">
+            @Html.LabelFor(model => model.Name)
+            @Html.HiddenFor(model => model.Name)
+            <p>@Html.DisplayFor(model => model.Name)</p>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.CacheControl)
+            @Html.EditorFor(model => model.CacheControl, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.CacheControl, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ContentDisposition)
+            @Html.EditorFor(model => model.ContentDisposition, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.ContentDisposition, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ContentEncoding)
+            @Html.EditorFor(model => model.ContentEncoding, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.ContentEncoding, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ContentLanguage)
+            @Html.EditorFor(model => model.ContentLanguage, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.ContentLanguage, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ContentMD5)
+            @Html.HiddenFor(model => model.ContentMD5)
+            <p>@Html.DisplayFor(model => model.ContentMD5)</p>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ContentType)
+            @Html.EditorFor(model => model.ContentType, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.ContentType, "", new { @class = "text-danger" })
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.ETag)
+            @Html.HiddenFor(model => model.ETag)
+            <p>@Html.DisplayFor(model => model.ETag)</p>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.LastModifiedUtcDateTime)
+            @Html.HiddenFor(model => model.LastModifiedUtcDateTime)
+            <p>@Html.DisplayFor(model => model.LastModifiedUtcDateTime)</p>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(model => model.Size)
+            @Html.HiddenFor(model => model.Length)
+            <p>@Html.DisplayFor(model => model.Size)</p>
+        </div>
+        <div>
+            @Html.LabelFor(model => model.Metadata)
+            @Html.ValidationMessageFor(model => model.Metadata, "", new { @class = "text-danger" })
+            @{
+    var i = 0;
+    <div id="metadata-area">
+        @{
+    foreach (var metadata in Model.Metadata)
+    {
+        <div class="form-inline">
+            <input type="text" name="Metadata[@i].Key" value="@metadata.Key" class="form-control" required />
+            <input type="text" name="Metadata[@i].Value" value="@metadata.Value" class="form-control" required />
+            <button type="button" class="btn btn-default btn-metadata"><span class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span></button>
+        </div>
+        i += 1;
+    }
+        }
+    </div>
+    <button type="button" class="btn btn-default btn-metadata" data-no="@i"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></button>
+}
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-lg btn-primary"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></button>
+    </div>
+}

@@ -1,0 +1,53 @@
+﻿@model IEnumerable<StorageIndexModel>
+<div>
+    <a href="@Url.Action("CreatePersonal")" class="btn btn-primary"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 追加</a>
+        <div class="btn-group pull-right">
+            @if (ViewBag.HasPreview)
+            {
+                <button class="btn btn-default btn-retrieve-list" data-url="@Url.Action("List", new {skip = (ViewBag.Skip - 10), take = 10})"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
+            }
+            else
+            {
+                <button class="btn btn-default disabled"><span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"></span></button>
+            }
+            @if (ViewBag.HasNext)
+            {
+                <button class="btn btn-default btn-retrieve-list" data-url="@Url.Action("List", new { skip = (ViewBag.Skip + 10), take = 10 })"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
+            }
+            else
+            {
+                <button class="btn btn-default disabled"><span class="glyphicon glyphicon-circle-arrow-right" aria-hidden="true"></span></button>
+            }
+            <button class="btn btn-default btn-retrieve-list btn-refresh-list pull-right" data-url="@Url.Action("List", new {skip = ViewBag.Skip, take = ViewBag.Take})"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+        </div>
+</div>
+<table class="table table-hover">
+    <tr>
+        <th class="col-xs-3 col-sm-3 col-md-3">@Html.DisplayNameFor(model => model.Name)</th>
+        <th class="col-xs-2 col-sm-2 col-md-2">@Html.DisplayNameFor(model => model.StorageType)</th>
+        <th class="col-xs-2 col-sm-2 col-md-2">@Html.DisplayNameFor(model => model.ThresholdSize)</th>
+        <th class="col-xs-1 col-sm-1 col-md-1"></th>
+        <th class="col-xs-1 col-sm-1 col-md-1"></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.Name)</td>
+            <td>@Html.DisplayFor(modelItem => item.StorageType)</td>
+            <td>@Html.DisplayFor(modelItem => item.ThresholdSize)</td>
+            <td>
+                <button class="btn btn-xs btn-primary btn-modal-view" data-url="@Url.Action("Edit", new {id = item.Id})"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
+            </td>
+            <td>
+                <button class="btn btn-xs btn-danger btn-modal-view" data-url="@Url.Action("Delete", new {id = item.Id})"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+            </td>
+        </tr>
+    }
+</table>
+<div class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+        </div>
+    </div>
+</div>
