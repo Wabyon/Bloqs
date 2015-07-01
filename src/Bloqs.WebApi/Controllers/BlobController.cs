@@ -5,39 +5,39 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
-using Newtonsoft.Json;
-using Bloqs.Data;
+using AutoMapper;
+using Bloqs.Data.Commands;
+using Bloqs.Models;
 
 namespace Bloqs.Controllers
 {
-    [AllowAnonymous]
+    [RoutePrefix("{accountName}")]
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class BlobController : ApiController
     {
-        private readonly ContainerRepository _conteinerRepository = new ContainerRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
-        private readonly BlobRepository _blobRepository = new BlobRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+        private readonly AccountDbCommand _accountDbCommand =
+            new AccountDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
 
-        [Route("blob/{containerName}/{name}")]
+        private readonly ContainerDbCommand _containerDbCommand =
+            new ContainerDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+
+        private readonly BlobDbCommand _blobDbCommand =
+            new BlobDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+
+        [Route("{containerName}/{name}")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetImage([FromUri] string containerName, [FromUri] string name)
+        public async Task<HttpResponseMessage> GetImageAsync([FromUri]string accountName, [FromUri] string containerName, [FromUri] string name)
         {
-            var container = await CheckAccessKeyAndGetContainer(containerName, true);
-
-            var blob = await _blobRepository.GetAsync(container.Id, name);
-
+            var container = await CheckAccessKey(accountName, containerName, true);
+            var blob = await _blobDbCommand.FindAsync(container, name);
             if (blob == null) throw new HttpResponseException(HttpStatusCode.NoContent);
-
             var res = Request.CreateResponse(HttpStatusCode.OK);
-
             var content = new ByteArrayContent(blob.Image);
-
-            content.Headers.ContentType = new MediaTypeHeaderValue(blob.Properties.ContentType);
+            content.Headers.ContentType = new MediaTypeHeaderValue(blob.Properties.ContentType ?? "application/octet-stream");
             content.Headers.ContentDisposition = new ContentDispositionHeaderValue(blob.Properties.ContentDisposition ?? "attachment")
             {
                 ModificationDate = blob.Properties.LastModifiedUtcDateTime,
@@ -48,67 +48,70 @@ namespace Bloqs.Controllers
             return res;
         }
 
-        [Route("blob/{containerName}/{name}/attribute")]
+        [Route("api/{containerName}/{name}/attributes")]
         [HttpGet]
-        public async Task<HttpResponseMessage> GetAttribute([FromUri] string containerName, [FromUri] string name)
+        public async Task<BlobResponseModel> GetReferenceAsync([FromUri]string accountName, [FromUri] string containerName, [FromUri] string name)
         {
-            var container = await CheckAccessKeyAndGetContainer(containerName, true);
+            var container = await CheckAccessKey(accountName, containerName);
+            var blob = await _blobDbCommand.GetAttributesAsync(container, name);
+            
+            if (blob != null) return Mapper.Map<BlobResponseModel>(blob);
 
-            var blob = await _blobRepository.GetAttributeAsync(container.Id, name) ??
-                       new BlobAttribute(new BlobProperties
-                       {
-                           ContentType = MimeMapping.GetMimeMapping(name),
-                           ContentDisposition = "attachment",
-                       })
-                       {
-                           Name = name,
-                       };
+            blob = container.CreateBlobAttributes(name);
+            blob.Properties.ContentType = MimeMapping.GetMimeMapping(name);
+            blob.Properties.ContentDisposition = "attachment";
 
-            var res = Request.CreateResponse(HttpStatusCode.OK);
-            var json = JsonConvert.SerializeObject(blob);
-            var content = new StringContent(json);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            res.Content = content;
-
-            return res;
+            return Mapper.Map<BlobResponseModel>(blob);
         }
 
-        [Route("blob/{containerName}/save")]
+        [Route("api/{containerName}/blobs/list")]
+        [HttpGet]
+        public async Task<IEnumerable<BlobResponseModel>> GetListAsync([FromUri] string accountName,
+            [FromUri] string containerName)
+        {
+            var container = await CheckAccessKey(accountName, containerName);
+            var count = await _blobDbCommand.CountAsync(container);
+            var blobs = await _blobDbCommand.GetAttributesListAsync(container, 0, count);
+            return Mapper.Map<IEnumerable<BlobResponseModel>>(blobs);
+        }
+
+        [Route("api/{containerName}/save")]
         [HttpPost]
-        public async Task<HttpResponseMessage> Save([FromUri] string containerName)
+        public async Task<HttpResponseMessage> SaveAsync([FromUri]string accountName, [FromUri] string containerName)
         {
             if (Request.Content.IsMimeMultipartContent() == false) throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
-
-            var container = await CheckAccessKeyAndGetContainer(containerName, true);
+            var container = await CheckAccessKey(accountName, containerName);
 
             var provider = await Request.Content.ReadAsMultipartAsync();
-
-            var attributeContent = provider.Contents.FirstOrDefault(x => x.Headers.ContentDisposition.Name == "attribute");
-
+            var attributeContent = provider.Contents.FirstOrDefault(x => x.Headers.ContentDisposition.Name == "attributes");
             if (attributeContent == null) throw new HttpResponseException(HttpStatusCode.BadRequest);
-
-            var json = await attributeContent.ReadAsStringAsync();
-            var blob = JsonConvert.DeserializeObject<Blob>(json);
-            blob.Properties.LastModifiedUtcDateTime = DateTime.UtcNow;
-            blob.Properties.ETag = CreateETag(blob.Properties.LastModifiedUtcDateTime.ToString("O"));
+            var blobRequest = await attributeContent.ReadAsAsync<BlobRequestModel>();
+            blobRequest.Properties.LastModifiedUtcDateTime = DateTime.UtcNow;
+            var blobAttributes = container.CreateBlobAttributes(blobRequest.Name);
+            Mapper.Map(blobRequest, blobAttributes);
 
             var fileContent = provider.Contents.FirstOrDefault(x => x.Headers.ContentDisposition.Name == "file");
-
             if (fileContent == null) throw new HttpResponseException(HttpStatusCode.BadRequest);
 
             var file = await fileContent.ReadAsByteArrayAsync();
 
-            blob.Image = file;
-            blob.Properties.Length = file.LongLength;
+            var blob = new Blob(blobAttributes)
+            {
+                Image = file,
+                Properties = {LastModifiedUtcDateTime = DateTime.UtcNow},
+            };
 
-            await _blobRepository.SaveAsync(container.Id, blob);
+            await _blobDbCommand.SaveAsync(blob);
 
             return Request.CreateResponse(HttpStatusCode.OK);
         }
 
-        private async Task<Container> CheckAccessKeyAndGetContainer(string containerName, bool throughCheckAccessKeyIfPublic = false)
+        private async Task<Container> CheckAccessKey(string accountName, string containerName, bool throughCheckAccessKeyIfPublic = false)
         {
-            var container = await _conteinerRepository.FindByNameAsync(containerName);
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) throw new HttpResponseException(HttpStatusCode.NotFound);
+
+            var container = await _containerDbCommand.FindAsync(account, containerName);
             if (container == null) throw new HttpResponseException(HttpStatusCode.NotFound);
 
             if (throughCheckAccessKeyIfPublic && container.IsPublic) return container;
@@ -124,21 +127,12 @@ namespace Bloqs.Controllers
 
             var key = keys.FirstOrDefault();
 
-            if (container.PrimaryAccessKey != key && container.SecondaryAccessKey != key)
+            if (account.PrimaryAccessKey != key && account.SecondaryAccessKey != key)
             {
                 throw new HttpResponseException(HttpStatusCode.Unauthorized);
             }
 
             return container;
-        }
-
-        private static string CreateETag(string s)
-        {
-            var provider = new SHA256CryptoServiceProvider();
-            var hash = provider.ComputeHash(Encoding.UTF8.GetBytes(s + Guid.NewGuid()));
-            var num = BitConverter.ToInt64(hash, 0);
-
-            return string.Format("0x{0}", num.ToString("X"));
         }
     }
 }

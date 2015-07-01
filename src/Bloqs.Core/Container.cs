@@ -1,59 +1,55 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace Bloqs
 {
+    /// <summary></summary>
     public class Container
     {
-        public string Id { get; private set; }
+        private readonly Metadata _metadata = new Metadata();
 
+        /// <summary></summary>
+        public Account Account { get; internal set; }
+
+        /// <summary></summary>
+        public string Id { get; set; }
+
+        /// <summary></summary>
         public string Name { get; set; }
 
+        /// <summary></summary>
         public bool IsPublic { get; set; }
 
-        public string Owner { get; set; }
-
-        public string PrimaryAccessKey { get; set; }
-
-        public string SecondaryAccessKey { get; set; }
-
-        public DateTime CreatedUtcDateTime { get; set; }
-
-        public DateTime LastModifiedUtcDateTime { get; set; }
-
-        public bool IsUsableName()
+        /// <summary></summary>
+        public Metadata Metadata
         {
-            return IsUsableName(Name);
+            get { return _metadata; }
         }
 
-        public Container()
+        /// <summary></summary>
+        public DateTime CreatedUtcDateTime { get; set; }
+
+        /// <summary></summary>
+        public DateTime LastModifiedUtcDateTime { get; set; }
+
+        internal Container()
         {
+        }
+
+        internal Container(Account accont)
+        {
+            if (accont == null) throw new ArgumentNullException("accont");
+            Account = accont;
+
             Id = Guid.NewGuid().ToString("N");
         }
 
-        public static bool IsUsableName(string name)
+        public BlobAttributes CreateBlobAttributes(string name)
         {
-            if (string.IsNullOrWhiteSpace(name)) return false;
-            if (UnusableNames.Contains(name.ToLower())) return false;
-            var regex = new Regex(UsableNamePattern);
-            if (!regex.IsMatch(name)) return false;
-
-            return true;
+            return new BlobAttributes(this)
+            {
+                Name = name,
+                Properties = { CreatedUtcDateTime = DateTime.UtcNow, LastModifiedUtcDateTime = DateTime.UtcNow },
+            };
         }
-
-        /// <summary>half-width alphanumeric characters and hyphens (-) only.
-        /// [0-9a-zA-Z-]+</summary>
-        public const string UsableNamePattern = @"[0-9a-zA-Z-]+";
-
-        private static readonly IList<string> UnusableNames = new[]
-        {
-            "bloqs",
-            "blob",
-            "blobs",
-            "container",
-            "containers",
-            "api"
-        };
     }
 }

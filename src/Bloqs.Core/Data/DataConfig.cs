@@ -1,29 +1,39 @@
 ﻿using System;
 using System.Data;
+using Bloqs.BlobStorage.Data;
+using Bloqs.Data.Commands;
 using Bloqs.Data.Internals;
+using Bloqs.Data.Migrations;
 using Dapper;
 
 namespace Bloqs.Data
 {
     public class DataConfig
     {
-        /// <summary>Initialize Database.
-        /// Call Application_Start this method.</summary>
+        /// <summary></summary>
         /// <param name="connectionString"></param>
         /// <param name="migrationEnable"></param>
         public static void Start(string connectionString, bool migrationEnable = true)
         {
-            // Mapping DateTime to SqlServer datetime2
             SqlMapper.AddTypeMap(typeof(DateTime), DbType.DateTime2);
             SqlMapper.AddTypeMap(typeof(DateTime?), DbType.DateTime2);
 
             if (!migrationEnable) return;
 
-            // If database is not exists, create database
             DatabaseHelper.CreateIfNotExists(connectionString);
 
-            // Migration dababase
             MigrationRunnerHelper.MigrateToLatest(connectionString);
+
+            var storages = new StorageDbCommand(connectionString).GetAllAsync().Result;
+
+            foreach (var storage in storages)
+            {
+                try
+                {
+                    BlobStorageConfig.Initialize(storage);
+                }
+                catch(Exception){}
+            }
         }
     }
 }

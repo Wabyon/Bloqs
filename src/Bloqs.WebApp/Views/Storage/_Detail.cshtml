@@ -1,0 +1,30 @@
+﻿@model StorageIndexModel
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">詳細</h4>
+</div>
+<div class="modal-body">
+    <dl class="wrapper1">
+        <dt>@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd>@Html.DisplayFor(model => model.Name)</dd>
+        <dt>@Html.DisplayNameFor(model => model.Owner)</dt>
+        <dd>@Html.DisplayFor(model => model.Owner)</dd>
+        <dt>@Html.DisplayNameFor(model => model.DataSource)</dt>
+        <dd>@Html.DisplayFor(model => model.DataSource)</dd>
+        <dt>@Html.DisplayNameFor(model => model.InitialCatalog)</dt>
+        <dd>@Html.DisplayFor(model => model.InitialCatalog)</dd>
+        <dt>@Html.DisplayNameFor(model => model.StorageType)</dt>
+        <dd>@Html.DisplayFor(model => model.StorageType)</dd>
+        <dt>@Html.DisplayNameFor(model => model.ThresholdSize)</dt>
+        <dd>@Html.DisplayFor(model => model.ThresholdSize)</dd>
+        <dt>@Html.DisplayNameFor(model => model.UsedSize)</dt>
+        <dd>@Html.DisplayFor(model => model.UsedSize)</dd>
+        <dt>@Html.DisplayNameFor(model => model.Status)</dt>
+        <dd>@Html.DisplayFor(model => model.Status)</dd>
+        <dt>@Html.DisplayNameFor(model => model.CreatedUtcDateTime)</dt>
+        <dd>@Html.DisplayFor(model => model.CreatedUtcDateTime)</dd>
+        <dt>@Html.DisplayNameFor(model => model.LastModifiedUtcDateTime)</dt>
+        <dd>@Html.DisplayFor(model => model.LastModifiedUtcDateTime)</dd>
+    </dl>
+</div>

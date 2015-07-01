@@ -1,0 +1,39 @@
+﻿@model ContainerIndexModel
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">詳細</h4>
+</div>
+<div class="modal-body">
+    <dl class="wrapper1">
+        <dt>@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd>@Html.DisplayFor(model => model.Name)</dd>
+        <dt>@Html.DisplayNameFor(model => model.ContainerApiAddress)</dt>
+        <dd>@Html.DisplayFor(model => model.ContainerApiAddress)</dd>
+        <dt>@Html.DisplayNameFor(model => model.Accessibility)</dt>
+        <dd>@Html.DisplayFor(model => model.Accessibility)</dd>
+        <dt>@Html.DisplayNameFor(model => model.CreatedUtcDateTime)</dt>
+        <dd>@Html.DisplayFor(model => model.CreatedUtcDateTime)</dd>
+        <dt>@Html.DisplayNameFor(model => model.LastModifiedUtcDateTime)</dt>
+        <dd>@Html.DisplayFor(model => model.LastModifiedUtcDateTime)</dd>
+        @if (Model.Metadata.Any())
+        {
+            <dt>@Html.DisplayNameFor(model => model.Metadata)</dt>
+            <dd>
+                <table class="table table-bordered table-striped">
+                    <tr>
+                        <th class="col-xs-2">Key</th>
+                        <th class="col-xs-3">Value</th>
+                    </tr>
+                    @foreach (var metadata in Model.Metadata)
+                    {
+                        <tr>
+                            <td>@metadata.Key</td>
+                            <td>@metadata.Value</td>
+                        </tr>
+                    }
+                </table>
+            </dd>
+        }
+    </dl>
+</div>

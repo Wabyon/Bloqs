@@ -1,41 +1,59 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using Bloqs.Data;
+using AutoMapper;
+using Bloqs.Data.Commands;
+using Bloqs.Filters;
 using Bloqs.Models;
 
 namespace Bloqs.Controllers
 {
+    [RoutePrefix("accounts/{accountName}/containers")]
     [Authorize]
     public class ContainerController : Controller
     {
-        private readonly ContainerRepository _containerRepository = new ContainerRepository(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+        private readonly AccountDbCommand _accountDbCommand =
+            new AccountDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
 
+        private readonly ContainerDbCommand _containerDbCommand =
+            new ContainerDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+
+        [NoCache]
         [Route("")]
         [HttpGet]
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(string accountName)
         {
-            var containers = await _containerRepository.GetListByOwnerAsync(User.Identity.Name, 0, 10);
-            var count = await _containerRepository.CountByOwnerAsync(User.Identity.Name);
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
+            var count = await _containerDbCommand.CountAsync(account);
+            var containers = await _containerDbCommand.GetListAsync(account, 0, 10);
+
+            ViewBag.AccountName = account.Name;
             ViewBag.Skip = 0;
             ViewBag.Take = 10;
             ViewBag.TotalCount = count;
             ViewBag.HasNext = !(count <= 10);
             ViewBag.HasPreview = false;
 
-            return View(containers.Select(x => new ContainerViewModel(x)));
+            return View(Mapper.Map<IEnumerable<ContainerIndexModel>>(containers));
         }
 
-        [Route("container/list/{skip}/{take}")]
+        [NoCache]
+        [Route("list")]
         [HttpGet]
-        public async Task<ActionResult> GetList(int skip, int take)
+        public async Task<ActionResult> List(string accountName, int skip, int take)
         {
-            var containers = await _containerRepository.GetListByOwnerAsync(User.Identity.Name, skip, take);
-            var count = await _containerRepository.CountByOwnerAsync(User.Identity.Name);
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            var count = await _containerDbCommand.CountAsync(account);
+            var containers = await _containerDbCommand.GetListAsync(account, skip, take);
 
             ViewBag.Skip = skip;
             ViewBag.Take = take;
@@ -43,148 +61,130 @@ namespace Bloqs.Controllers
             ViewBag.HasNext = !(count <= skip + take);
             ViewBag.HasPreview = (skip != 0);
 
-            return PartialView("_List", containers.Select(x => new ContainerViewModel(x)));
+            return PartialView("_List", Mapper.Map<IEnumerable<ContainerIndexModel>>(containers));
         }
 
-        [Route("container/new")]
+        [NoCache]
+        [Route("new")]
         [HttpGet]
-        public ActionResult Create()
+        public async Task<ActionResult> Create(string accountName)
         {
-            return PartialView("_Create", new ContainerCreateModel());
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            var container = account.CreateContainer("");
+
+            return PartialView("_Create", Mapper.Map<ContainerCreateModel>(container));
         }
 
-        [Route("container/new")]
+        [NoCache]
+        [Route("new")]
         [HttpPost]
-        public async Task<ActionResult> Create(ContainerCreateModel model)
+        public async Task<ActionResult> Create(string accountName, ContainerCreateModel model)
         {
-            if (!ModelState.IsValid)
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            if (!ModelState.IsValid) return PartialView("_Create", model);
+
+            if (await _containerDbCommand.ExistsAsync(account, model.Name))
             {
+                ModelState.AddModelError("Name", "この名前はすでに使用されています。");
                 return PartialView("_Create", model);
             }
 
-            if (!Container.IsUsableName(model.Name))
-            {
-                ModelState.AddModelError("Name", "This name is unusable.");
-                return PartialView("_Create", model);
-            }
+            var container = account.CreateContainer(model.Name);
+            Mapper.Map(model, container);
 
-            if (await _containerRepository.ExistsNameAsync(model.Name))
-            {
-                ModelState.AddModelError("Name", "This name is already used or unusable.");
-                return PartialView("_Create", model);
-            }
-
-            await _containerRepository.CreateAsync(model.ToContainer(User.Identity.Name));
+            await _containerDbCommand.SaveAsync(container);
 
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
-        [Route("container/{name}/edit")]
+        [NoCache]
+        [Route("{id}/detail")]
         [HttpGet]
-        public async Task<ActionResult> Edit(string name)
+        public async Task<ActionResult> Detail(string accountName, string id)
         {
-            var container = await _containerRepository.FindByNameAsync(name);
-            if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            return PartialView("_Edit",new ContainerEditModel{Name = container.Name, IsPublic = container.IsPublic});
+            var container = await _containerDbCommand.FindAsync(id);
+            if (container == null) return HttpNotFound();
+            return PartialView("_Detail", Mapper.Map<ContainerIndexModel>(container));
         }
 
-        [Route("container/{name}/edit")]
-        [HttpPost]
-        public async Task<ActionResult> Edit(string name, ContainerEditModel model)
+        [NoCache]
+        [Route("{id}/edit")]
+        [HttpGet]
+        public async Task<ActionResult> Edit(string accountName, string id)
         {
-            if (!ModelState.IsValid)
-            {
-                return PartialView("_Edit", model);
-            }
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var container = await _containerRepository.FindByNameAsync(name);
+            var container = await _containerDbCommand.FindAsync(id);
             if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+            return PartialView("_Edit", Mapper.Map<ContainerEditModel>(container));
+        }
 
-            container.IsPublic = model.IsPublic;
+        [NoCache]
+        [Route("{id}/edit")]
+        [HttpPost]
+        public async Task<ActionResult> Edit(string accountName, string id, ContainerEditModel model)
+        {
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            if (!ModelState.IsValid) return PartialView("_Edit", model);
+
+            var container = await _containerDbCommand.FindAsync(id);
+            if (container == null) return HttpNotFound();
+
+            Mapper.Map(model, container);
             container.LastModifiedUtcDateTime = DateTime.UtcNow;
 
-            await _containerRepository.UpdateAsync(container.Id, container);
+            await _containerDbCommand.SaveAsync(container);
 
             return new HttpStatusCodeResult(HttpStatusCode.OK);
         }
 
-        [Route("container/{name}/delete")]
+        [NoCache]
+        [Route("{id}/delete")]
         [HttpGet]
-        public async Task<ActionResult> Delete(string name)
+        public async Task<ActionResult> Delete(string accountName, string id)
         {
-            var container = await _containerRepository.FindByNameAsync(name);
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
+
+            var container = await _containerDbCommand.FindAsync(id);
             if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var model = new ContainerDeleteModel(container);
-
-            return PartialView("_Delete", model);
+            return PartialView("_Delete", Mapper.Map<ContainerDeleteModel>(container));
         }
 
-        [Route("container/{name}/delete")]
+        [NoCache]
+        [Route("{id}/delete")]
         [HttpPost]
-        public async Task<ActionResult> Delete(string name, ContainerDeleteModel model)
+        public async Task<ActionResult> Delete(string accountName, string id, ContainerDeleteModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                return PartialView("_Delete", model);
-            }
+            var account = await _accountDbCommand.FindByNameAsync(accountName);
+            if (account == null) return HttpNotFound();
+            if (account.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            var container = await _containerRepository.FindByNameAsync(name);
+            if (!ModelState.IsValid) return PartialView("_Delete", model);
+
+            var container = await _containerDbCommand.FindAsync(id);
             if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
 
-            await _containerRepository.DeleteAsync(container.Id);
+            await _containerDbCommand.DeleteAsync(id);
 
             return new HttpStatusCodeResult(HttpStatusCode.OK);
-        }
-
-        [Route("container/{name}/keys")]
-        [HttpGet]
-        public async Task<ActionResult> MaintainKey(string name)
-        {
-            var container = await _containerRepository.FindByNameAsync(name);
-            if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
-
-            return PartialView("_MaintainKey",
-                new ContainerKeyEditModel
-                {
-                    Name = container.Name,
-                    PrimaryAccessKey = container.PrimaryAccessKey,
-                    SecondaryAccessKey = container.SecondaryAccessKey
-                });
-        }
-
-        [Route("container/{name}/keys/recreate")]
-        [HttpPost]
-        public async Task<ActionResult> RecreateAccessKey(string name, int keyno)
-        {
-            if (keyno < 1 || keyno > 2) return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-
-            var container = await _containerRepository.FindByNameAsync(name);
-            if (container == null) return HttpNotFound();
-            if (container.Owner != User.Identity.Name) return new HttpUnauthorizedResult();
-
-            var newkey = ContainerKeyEditModel.CreateNewAccessKeyString();
-
-            if (keyno == 1) container.PrimaryAccessKey = newkey;
-            else container.SecondaryAccessKey = newkey;
-
-            container.LastModifiedUtcDateTime = DateTime.UtcNow;
-
-            await _containerRepository.UpdateAsync(container.Id, container);
-
-            return
-                Json(new ContainerKeyEditModel
-                {
-                    Name = container.Name,
-                    PrimaryAccessKey = container.PrimaryAccessKey,
-                    SecondaryAccessKey = container.SecondaryAccessKey
-                });
         }
     }
 }

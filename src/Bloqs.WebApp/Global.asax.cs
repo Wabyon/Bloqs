@@ -16,6 +16,7 @@ namespace Bloqs
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             DataConfig.Start(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            MappingConfig.CreateMaps();
         }
     }
 }

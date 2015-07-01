@@ -1,0 +1,9 @@
+﻿@model IEnumerable<AccountIndexModel>
+<h3>ストレージアカウント</h3>
+<div class="pagination-list-area modal-edit-area">
+    @{Html.RenderPartial("_List", Model);}
+</div>
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/bloqs/account")
+}

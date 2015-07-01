@@ -10,6 +10,7 @@ namespace Bloqs.Data.Internals
             var databaseName = connectionStringBuilder.InitialCatalog;
 
             connectionStringBuilder.InitialCatalog = "master";
+            connectionStringBuilder.ConnectTimeout = 20;
 
             using (var connection = new SqlConnection(connectionStringBuilder.ToString()))
             {
@@ -34,6 +35,8 @@ WHERE
                     command.CommandText = string.Format("CREATE DATABASE [{0}]", databaseName);
                     command.ExecuteNonQuery();
                 }
+
+                connection.Close();
             }
         }
     }

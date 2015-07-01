@@ -10,6 +10,7 @@ namespace Bloqs
         {
             GlobalConfiguration.Configure(WebApiConfig.Register);
             DataConfig.Start(ConfigurationManager.ConnectionStrings["Default"].ConnectionString, false);
+            MappingConfig.CreateMaps();
         }
     }
 }

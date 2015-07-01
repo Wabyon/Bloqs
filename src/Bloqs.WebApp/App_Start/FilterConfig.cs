@@ -1,4 +1,5 @@
 ﻿using System.Web.Mvc;
+using Bloqs.Filters;
 
 namespace Bloqs
 {
@@ -6,7 +7,7 @@ namespace Bloqs
     {
         public static void RegisterGlobalFilters(GlobalFilterCollection filters)
         {
-            filters.Add(new HandleErrorAttribute());
+            filters.Add(new GlobalHandleErrorAttribute());
         }
     }
 }
