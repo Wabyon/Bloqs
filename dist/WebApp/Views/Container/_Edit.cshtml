@@ -4,7 +4,7 @@
     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     <h4 class="modal-title">"@Model.Name" の編集</h4>
 </div>
-@using (Html.BeginForm("Edit", "Container", new {id = Model.Id}))
+@using (Html.BeginForm("Edit", "Container", new {id = Model.Id}, FormMethod.Post, new {autocomplete = "off"}))
 {
     @Html.AntiForgeryToken()
     @Html.HiddenFor(model => model.Name)

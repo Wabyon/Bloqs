@@ -26,10 +26,8 @@
         <th class="col-xs-3 col-sm-3 col-md-3">@Html.DisplayNameFor(model => model.Name)</th>
         <th class="col-xs-3 col-sm-3 col-md-3">@Html.DisplayNameFor(model => model.BlobApiAddress)</th>
         <th class="col-xs-2 col-sm-2 col-md-2">@Html.DisplayNameFor(model => model.LastModifiedUtcDateTime)</th>
-        <th class="col-xs-1 col-sm-1 col-md-1">@Html.DisplayNameFor(model => model.Size)</th>
-        <th class="col-xs-1 col-sm-1 col-md-1"></th>
-        <th class="col-xs-1 col-sm-1 col-md-1"></th>
-        <th class="col-xs-1 col-sm-1 col-md-1"></th>
+        <th class="col-xs-1 col-sm-1 col-md-1 text-right">@Html.DisplayNameFor(model => model.Size)</th>
+        <th class="col-xs-1 col-sm-2 col-md-2 text-right"></th>
     </tr>
     @foreach (var item in Model)
     {
@@ -37,13 +35,12 @@
             <td>@Html.DisplayFor(modelItem => item.Name)</td>
             <td style="padding: 2px;">@Html.EditorFor(modelItem => item.BlobApiAddress, new { htmlAttributes = new { @class = "form-control input-sm", @readonly = "readonly" } })</td>
             <td>@Html.DisplayFor(modelItem => item.LastModifiedUtcDateTime)</td>
-            <td>@Html.DisplayFor(modelItem => item.Size)</td>
-            <td>@Html.ActionLink("Download", "Download", "Blob", new { id = item.Id }, new { @class = "btn btn-xs btn-info" })</td>
-            <td>
-                <button class="btn btn-xs btn-primary btn-modal-view" data-url="@Url.Action("Edit", new { id = item.Id })"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
-            </td>
-            <td>
-                <button class="btn btn-xs btn-danger btn-modal-view" data-url="@Url.Action("Delete", new { id = item.Id })"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
+            <td class="text-right">@Html.DisplayFor(modelItem => item.Size)</td>
+            <td class="text-right">
+                <a href="@Url.Action("Download", new {id = item.Id})" class="btn btn-primary btn-xs"><span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></a>
+                <button class="btn btn-xs btn-info btn-modal-view" data-url="@Url.Action("Detail", new {id = item.Id})"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></button>
+                <button class="btn btn-xs btn-primary btn-modal-view" data-url="@Url.Action("Edit", new {id = item.Id})"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
+                <button class="btn btn-xs btn-danger btn-modal-view" data-url="@Url.Action("Delete", new {id = item.Id})"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
             </td>
         </tr>
     }

@@ -25,22 +25,20 @@
     <tr>
         <th class="col-xs-3 col-sm-3 col-md-3">@Html.DisplayNameFor(model => model.Name)</th>
         <th class="col-xs-3 col-sm-3 col-md-3">@Html.DisplayNameFor(model => model.ContainerApiAddress)</th>
-        <th class="col-xs-2 col-sm-2 col-md-2">@Html.DisplayNameFor(model => model.Accessibility)</th>
+        <th class="col-xs-2 col-sm-2 col-md-2 text-center">@Html.DisplayNameFor(model => model.Accessibility)</th>
         <th class="col-xs-2 col-sm-2 col-md-2">@Html.DisplayNameFor(model => model.LastModifiedUtcDateTime)</th>
-        <th class="col-xs-1 col-sm-1 col-md-1"></th>
-        <th class="col-xs-1 col-sm-1 col-md-1"></th>
+        <th class="col-xs-1 col-sm-1 col-md-1 text-right"></th>
     </tr>
     @foreach (var item in Model)
     {
         <tr>
             <td><a href="@Url.Action("Index","Blob", new { accountName = item.AccountName, containerName = item.Name })" style="display: block; height: 100%;">@Html.DisplayFor(modelItem => item.Name)</a></td>
             <td>@Html.DisplayFor(modelItem => item.ContainerApiAddress)</td>
-            <td>@Html.DisplayFor(modelItem => item.Accessibility)</td>
+            <td class="text-center">@Html.DisplayFor(modelItem => item.Accessibility)</td>
             <td>@Html.DisplayFor(modelItem => item.LastModifiedUtcDateTime)</td>
-            <td>
+            <td class="text-right">
+                <button class="btn btn-xs btn-info btn-modal-view" data-url="@Url.Action("Detail", new { id = item.Id })"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></button>
                 <button class="btn btn-xs btn-primary btn-modal-view" data-url="@Url.Action("Edit", new { id = item.Id })"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
-            </td>
-            <td>
                 <button class="btn btn-xs btn-danger btn-modal-view" data-url="@Url.Action("Delete", new { id = item.Id })"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
             </td>
         </tr>

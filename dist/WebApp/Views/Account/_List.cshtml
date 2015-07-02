@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<AccountIndexModel>
 <div>
-    <button class="btn btn-primary btn-modal-view" data-url="@Url.Action("Create")"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 追加</button>
+    <a href="@Url.Action("Create")" class="btn btn-primary"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 追加</a>
     <div class="btn-group pull-right">
         @if (ViewBag.HasPreview)
         {
@@ -25,10 +25,9 @@
     <tr>
         <th class="col-xs-3 col-sm-3 col-md-3">@Html.DisplayNameFor(model => model.Name)</th>
         <th class="col-xs-3 col-sm-3 col-md-3">@Html.DisplayNameFor(model => model.AccountApiAddress)</th>
-        <th class="col-xs-2 col-sm-2 col-md-2">@Html.DisplayNameFor(model => model.StorageType)</th>
+        <th class="col-xs-2 col-sm-2 col-md-2 text-center">@Html.DisplayNameFor(model => model.StorageTypeDisplay)</th>
         <th class="col-xs-2 col-sm-2 col-md-2">@Html.DisplayNameFor(model => model.CreatedUtcDateTime)</th>
-        <th class="col-xs-1 col-sm-1 col-md-1"></th>
-        <th class="col-xs-1 col-sm-1 col-md-1"></th>
+        <th class="col-xs-1 col-sm-1 col-md-1 text-right"></th>
     </tr>
 
     @foreach (var item in Model)
@@ -36,12 +35,11 @@
         <tr>
             <td><a href="@Url.Action("Index", "Container", new { accountName = item.Name })" style="display: block; height: 100%;">@Html.DisplayFor(modelItem => item.Name)</a></td>
             <td>@Html.DisplayFor(modelItem => item.AccountApiAddress)</td>
-            <td>@Html.DisplayFor(modelItem => item.StorageType)</td>
+            <td class="text-center">@Html.DisplayFor(modelItem => item.StorageTypeDisplay)</td>
             <td>@Html.DisplayFor(modelItem => item.CreatedUtcDateTime)</td>
-            <td>
+            <td class="text-right">
+                <button class="btn btn-xs btn-info btn-modal-view" data-url="@Url.Action("Detail", new {id = item.Id})"><span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></button>
                 <button class="btn btn-xs btn-primary btn-modal-view" data-url="@Url.Action("Edit", new {id = item.Id})"><span class="glyphicon glyphicon-cog" aria-hidden="true"></span></button>
-            </td>
-            <td>
                 <button class="btn btn-xs btn-danger btn-modal-view" data-url="@Url.Action("Delete", new {id = item.Id})"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button>
             </td>
         </tr>

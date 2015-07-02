@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -12,14 +11,16 @@ using Bloqs.Models;
 
 namespace Bloqs.Controllers
 {
+    [TraceLogFilter]
+    [AccessLogFilter]
     [RoutePrefix("accounts")]
     [Authorize]
     public class AccountController : Controller
     {
         private readonly AccountDbCommand _accountDbCommand =
-            new AccountDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new AccountDbCommand(GlobalSettings.DefaultConnectionString);
         private readonly StorageDbCommand _storageDbCommand =
-            new StorageDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new StorageDbCommand(GlobalSettings.DefaultConnectionString);
 
         [NoCache]
         [Route("")]
@@ -38,6 +39,8 @@ namespace Bloqs.Controllers
             return View(Mapper.Map<IEnumerable<AccountIndexModel>>(accounts));
         }
 
+        [TraceLogFilter]
+        [AccessLogFilter]
         [NoCache]
         [Route("list")]
         [HttpGet]
@@ -57,6 +60,7 @@ namespace Bloqs.Controllers
 
         [NoCache]
         [Route("{id}/detail")]
+        [HttpGet]
         public async Task<ActionResult> Detail(string id)
         {
             var account = await _accountDbCommand.FindAsync(id);

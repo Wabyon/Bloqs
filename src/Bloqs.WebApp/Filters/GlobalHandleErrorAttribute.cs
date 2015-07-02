@@ -1,17 +1,19 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net;
 using System.Web.Mvc;
+using Bloqs.Logging;
 
 namespace Bloqs.Filters
 {
     public class GlobalHandleErrorAttribute : HandleErrorAttribute
     {
+        private readonly ITraceLogger _traceLogger = LogManager.GetTraceLogger("APP");
+
         public override void OnException(ExceptionContext filterContext)
         {
             if (filterContext == null) throw new ArgumentNullException("filterContext");
 
-            Trace.TraceError(filterContext.Exception.Message);
+            _traceLogger.Error(filterContext.Exception);
 
             if (filterContext.HttpContext.Request.IsAjaxRequest())
             {

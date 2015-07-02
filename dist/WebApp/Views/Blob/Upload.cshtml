@@ -1,4 +1,4 @@
-﻿<h3><a href="@Url.Action("Index","Account")">ストレージアカウント</a> &gt; <a href="@Url.Action("Index", "Container", new { accountName = ViewBag.AccountName })">@ViewBag.AccountName</a> &gt; <a href="@Url.Action("Index", "Blob", new { accountName = ViewBag.AccountName, containerName = ViewBag.ContainerName })">@ViewBag.ContainerName</a></h3>
+﻿<h3><a href="@Url.Action("Index","Account")">アカウント</a> &gt; <a href="@Url.Action("Index", "Container", new { accountName = ViewBag.AccountName })">@ViewBag.AccountName</a> &gt; <a href="@Url.Action("Index", "Blob", new { accountName = ViewBag.AccountName, containerName = ViewBag.ContainerName })">@ViewBag.ContainerName</a></h3>
 
 <div class="container">
     @using (Html.BeginForm("UploadImage", "Blob", null, FormMethod.Post, new { enctype = "multipart/form-data" }))

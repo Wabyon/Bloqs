@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -11,15 +10,17 @@ using Bloqs.Models;
 
 namespace Bloqs.Controllers
 {
+    [TraceLogFilter]
+    [AccessLogFilter]
     [RoutePrefix("accounts/{accountName}/containers")]
     [Authorize]
     public class ContainerController : Controller
     {
         private readonly AccountDbCommand _accountDbCommand =
-            new AccountDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new AccountDbCommand(GlobalSettings.DefaultConnectionString);
 
         private readonly ContainerDbCommand _containerDbCommand =
-            new ContainerDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new ContainerDbCommand(GlobalSettings.DefaultConnectionString);
 
         [NoCache]
         [Route("")]

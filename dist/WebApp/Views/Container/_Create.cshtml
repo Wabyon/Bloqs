@@ -4,7 +4,7 @@
     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
     <h4 class="modal-title">新しいコンテナ</h4>
 </div>
-@using (Html.BeginForm("Create", "Container"))
+@using (Html.BeginForm("Create", "Container",FormMethod.Post,new {autocomplete = "off"}))
 {
     @Html.AntiForgeryToken()
     <div class="modal-body">

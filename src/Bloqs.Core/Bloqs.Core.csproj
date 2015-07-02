@@ -44,9 +44,15 @@
       <HintPath>..\..\packages\FluentMigrator.Runner.1.5.1.0\lib\40\FluentMigrator.Runner.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="MiniProfiler">
+      <HintPath>..\..\packages\MiniProfiler.3.1.1.140\lib\net40\MiniProfiler.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\..\packages\NLog.4.0.1\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -79,6 +85,26 @@
     <Compile Include="Data\Migrations\MigrationRunnerHelper.cs" />
     <Compile Include="Data\Commands\AccountDbCommand.cs" />
     <Compile Include="Data\Commands\StorageDbCommand.cs" />
+    <Compile Include="Logging\ApiAccessLog.cs" />
+    <Compile Include="Logging\Data.Migrations\201507012301001_LogDataInitialCreate.cs" />
+    <Compile Include="Logging\Data.Migrations\LogDataMigrationRunnerHelper.cs" />
+    <Compile Include="Logging\Data\LogDataConfig.cs" />
+    <Compile Include="Logging\Data\TraceDbProfiler.cs" />
+    <Compile Include="Logging\Data\ApiAccessLoggerBase.cs" />
+    <Compile Include="Logging\DefaultTraceLogInitializer.cs" />
+    <Compile Include="Logging\IApiAccessLogger.cs" />
+    <Compile Include="Logging\Internals\EmptyApiAccessLogger.cs" />
+    <Compile Include="Logging\Internals\EmptyWebAccessLogger.cs" />
+    <Compile Include="Logging\Internals\TraceLogLevelExtensions.cs" />
+    <Compile Include="Logging\ITraceLogger.cs" />
+    <Compile Include="Logging\IWebAccessLogger.cs" />
+    <Compile Include="Logging\Internals\TraceLogger.cs" />
+    <Compile Include="Logging\TraceLogLevel.cs" />
+    <Compile Include="Logging\LogManager.cs" />
+    <Compile Include="Logging\TraceLogMessage.cs" />
+    <Compile Include="Logging\Internals\TraceLogConfigurationFactory.cs" />
+    <Compile Include="Logging\WebAccessLog.cs" />
+    <Compile Include="Logging\Data\WebAccessLoggerBase.cs" />
     <Compile Include="Metadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\SharedAssemblyInfo.cs" />
