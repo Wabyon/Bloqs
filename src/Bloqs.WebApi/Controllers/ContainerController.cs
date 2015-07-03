@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
 using AutoMapper;
 using Bloqs.Data.Commands;
+using Bloqs.Filters;
 using Bloqs.Models;
 
 namespace Bloqs.Controllers
 {
+    [AccessLogFilter]
+    [TraceLogFilter]
     [RoutePrefix("{accountName}")]
     public class ContainerController : ApiController
     {
         private readonly AccountDbCommand _accountDbCommand =
-            new AccountDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new AccountDbCommand(GlobalSettings.DefaultConnectionString);
 
         private readonly ContainerDbCommand _containerDbCommand =
-            new ContainerDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new ContainerDbCommand(GlobalSettings.DefaultConnectionString);
 
         [Route("api/{name}/attributes")]
         [HttpGet]

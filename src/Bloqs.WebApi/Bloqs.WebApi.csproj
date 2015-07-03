@@ -99,14 +99,22 @@
     <Compile Include="..\Bloqs.Core\Properties\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\LoggingConfig.cs" />
     <Compile Include="App_Start\MappingConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\ContainerController.cs" />
     <Compile Include="Controllers\BlobController.cs" />
+    <Compile Include="Filters\AccessLogFilter.cs" />
+    <Compile Include="Filters\GlobalHandleErrorAttribute.cs" />
+    <Compile Include="Filters\TraceLogFilter.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="GlobalSettings.cs" />
+    <Compile Include="Internals\NameValueCollectionExtensions.cs" />
     <Compile Include="Internals\Strings.cs" />
+    <Compile Include="Logging\ApiAccessLogger.cs" />
     <Compile Include="Models\BlobModels.cs" />
     <Compile Include="Models\ContainerModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

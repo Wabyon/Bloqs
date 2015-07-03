@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,22 +10,25 @@ using System.Web.Http;
 using System.Web.Http.Cors;
 using AutoMapper;
 using Bloqs.Data.Commands;
+using Bloqs.Filters;
 using Bloqs.Models;
 
 namespace Bloqs.Controllers
 {
+    [AccessLogFilter]
+    [TraceLogFilter]
     [RoutePrefix("{accountName}")]
     [EnableCors(origins: "*", headers: "*", methods: "*")]
     public class BlobController : ApiController
     {
         private readonly AccountDbCommand _accountDbCommand =
-            new AccountDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new AccountDbCommand(GlobalSettings.DefaultConnectionString);
 
         private readonly ContainerDbCommand _containerDbCommand =
-            new ContainerDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new ContainerDbCommand(GlobalSettings.DefaultConnectionString);
 
         private readonly BlobDbCommand _blobDbCommand =
-            new BlobDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+            new BlobDbCommand(GlobalSettings.DefaultConnectionString);
 
         [Route("{containerName}/{name}")]
         [HttpGet]

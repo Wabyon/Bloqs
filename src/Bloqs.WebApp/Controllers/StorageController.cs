@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,12 +12,14 @@ using Bloqs.Models;
 
 namespace Bloqs.Controllers
 {
+    [TraceLogFilter]
+    [AccessLogFilter]
     [RoutePrefix("storages")]
     [Authorize]
     public class StorageController : Controller
     {
-        private readonly StorageDbCommand _storageDbCommand = new StorageDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
-        private readonly AccountDbCommand _accountDbCommand = new AccountDbCommand(ConfigurationManager.ConnectionStrings["Default"].ConnectionString);
+        private readonly StorageDbCommand _storageDbCommand = new StorageDbCommand(GlobalSettings.DefaultConnectionString);
+        private readonly AccountDbCommand _accountDbCommand = new AccountDbCommand(GlobalSettings.DefaultConnectionString);
 
         [NoCache]
         [Route("")]

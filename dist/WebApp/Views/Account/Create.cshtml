@@ -1,0 +1,52 @@
+﻿@model AccountCreateModel
+<h3><a href="@Url.Action("Index","Account")">アカウント</a> &gt; 新しいアカウント</h3>
+
+@using (Html.BeginForm("Create", "Account",FormMethod.Post,new {autocomplete = "off"}))
+{
+    @Html.AntiForgeryToken()
+    <div class="form-horizontal">
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            <div class="col-xs-6">
+                @Html.LabelFor(model => model.Name)
+                @Html.EditorFor(model => model.Name, new {htmlAttributes = new {@class = "form-control input-sm"}})
+                @Html.ValidationMessageFor(model => model.Name, "", new {@class = "text-danger"})
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-6">
+                <label>
+                    @Html.CheckBoxFor(model => model.UsePersonalStorage) @Html.DisplayNameFor(model => model.UsePersonalStorage)
+                    @Html.ValidationMessageFor(model => model.UsePersonalStorage, "", new { @class = "text-danger" })
+                </label>
+                @Html.DropDownListFor(model => model.PersonalStorageId, Model.PersonalSorages, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.PersonalStorageId, "", new { @class = "text-danger" })
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-6">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-6">
+                <input type="submit" value="登録" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        $(function() {
+            $('#UsePersonalStorage').click(function() {
+                var $self = $(this);
+                if ($self.is(':checked')) {
+                    $('#PersonalSorageId').show();
+                } else {
+                    $('#PersonalSorageId').hide();
+                }
+            });
+        });
+    </script>
+}

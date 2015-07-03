@@ -1,5 +1,4 @@
-﻿using System.Configuration;
-using System.Web.Http;
+﻿using System.Web.Http;
 using Bloqs.Data;
 
 namespace Bloqs
@@ -9,8 +8,10 @@ namespace Bloqs
         protected void Application_Start()
         {
             GlobalConfiguration.Configure(WebApiConfig.Register);
-            DataConfig.Start(ConfigurationManager.ConnectionStrings["Default"].ConnectionString, false);
+            FilterConfig.RegisterGlobalFilters(GlobalConfiguration.Configuration.Filters);
+            DataConfig.Start(GlobalSettings.DefaultConnectionString, false);
             MappingConfig.CreateMaps();
+            LoggingConfig.Initialize();
         }
     }
 }

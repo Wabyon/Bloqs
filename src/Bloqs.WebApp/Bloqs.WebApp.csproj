@@ -132,6 +132,7 @@
     </Compile>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
+    <Compile Include="App_Start\LoggingConfig.cs" />
     <Compile Include="App_Start\MappingConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -139,14 +140,19 @@
     <Compile Include="Controllers\ContainerController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\StorageController.cs" />
+    <Compile Include="Filters\AccessLogFilter.cs" />
     <Compile Include="Filters\GlobalHandleErrorAttribute.cs" />
     <Compile Include="Filters\NoCacheAttribute.cs" />
+    <Compile Include="Filters\TraceLogFilter.cs" />
     <Compile Include="GlimpseSecurityPolicy.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="GlobalSettings.cs" />
+    <Compile Include="Internals\NameValueCollectionExtensions.cs" />
     <Compile Include="Internals\ThresholdSizeExtenrions.cs" />
     <Compile Include="Internals\Utilities.cs" />
+    <Compile Include="Logging\WebAccessLogger.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\BlobViewModels.cs" />
     <Compile Include="Models\ContainerViewModels.cs" />

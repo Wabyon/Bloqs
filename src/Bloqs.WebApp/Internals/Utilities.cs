@@ -1,16 +1,12 @@
-﻿using System.Configuration;
-
-namespace Bloqs.Internals
+﻿namespace Bloqs.Internals
 {
     public static class Utilities
     {
-        public static readonly string ApiAddress = ConfigurationManager.AppSettings["bloqs:ApiAddress"];
-
         public static string CreateApiAddress(string account, string container = null, string blob = null)
         {
             string apiAddress;
-            if (!ApiAddress.EndsWith("/")) apiAddress = ApiAddress + "/" + account;
-            else apiAddress = ApiAddress + account;
+            if (!GlobalSettings.ApiAddress.EndsWith("/")) apiAddress = GlobalSettings.ApiAddress + "/" + account;
+            else apiAddress = GlobalSettings.ApiAddress + account;
 
             if (container == null) return apiAddress;
 

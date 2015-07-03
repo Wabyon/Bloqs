@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data.Common;
+using Bloqs.Logging.Data;
+using StackExchange.Profiling.Data;
 
 namespace Bloqs.Data.Commands
 {
@@ -31,7 +33,7 @@ namespace Bloqs.Data.Commands
             if (cn == null) throw new InvalidOperationException();
 
             cn.ConnectionString = connectionString;
-            return cn;
+            return new ProfiledDbConnection(cn, new TraceDbProfiler());
         }
     }
 }

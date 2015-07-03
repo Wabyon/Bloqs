@@ -1,0 +1,37 @@
+﻿@using Bloqs
+@model AccountIndexModel
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title">詳細</h4>
+</div>
+<div class="modal-body">
+    <dl class="wrapper1">
+        <dt>@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd>@Html.DisplayFor(model => model.Name)</dd>
+        <dt>@Html.DisplayNameFor(model => model.AccountApiAddress)</dt>
+        <dd>@Html.DisplayFor(model => model.AccountApiAddress)</dd>
+        <dt>@Html.DisplayNameFor(model => model.Owner)</dt>
+        <dd>@Html.DisplayFor(model => model.Owner)</dd>
+        <dt>@Html.DisplayNameFor(model => model.PrimaryAccessKey)</dt>
+        <dd>@Html.DisplayFor(model => model.PrimaryAccessKey)</dd>
+        <dt>@Html.DisplayNameFor(model => model.SecondaryAccessKey)</dt>
+        <dd>@Html.DisplayFor(model => model.SecondaryAccessKey)</dd>
+        <dt>@Html.DisplayNameFor(model => model.CreatedUtcDateTime)</dt>
+        <dd>@Html.DisplayFor(model => model.CreatedUtcDateTime)</dd>
+        <dt>@Html.DisplayNameFor(model => model.LastModifiedUtcDateTime)</dt>
+        <dd>@Html.DisplayFor(model => model.LastModifiedUtcDateTime)</dd>
+        <dt>@Html.DisplayNameFor(model => model.StorageTypeDisplay)</dt>
+        <dd>@Html.DisplayFor(model => model.StorageTypeDisplay)</dd>
+        @if (Model.StorageType == StorageType.Personal)
+        {
+            <dt>@Html.DisplayNameFor(model => model.Storages)</dt>
+            <dd>
+                @foreach (var storage in Model.Storages)
+                {
+                <p>@storage</p>
+                }
+            </dd>
+        }
+    </dl>
+</div>

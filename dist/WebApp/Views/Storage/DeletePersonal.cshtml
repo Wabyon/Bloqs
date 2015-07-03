@@ -1,1 +1,47 @@
-﻿
+﻿@model PersonalStorageDeleteModel
+<h3><a href="@Url.Action("Index", "Storage")">ストレージ</a> &gt; "@Model.Name" の削除</h3>
+
+@if (Model.IsAlreadyUsed)
+{
+    <div class="alert alert-warning" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        アカウントに利用されているため、削除できません。<br/>
+    </div>
+}
+else
+{
+    <div class="alert alert-danger" role="alert">
+        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+        ストレージ情報を削除しても、データベースファイルは削除されません。
+        Management Studio等から手動で削除して下さい。
+    </div>
+    
+    using (Html.BeginForm("DeletePersonal", "Storage", FormMethod.Post, new { autocomplete = "off" }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="form-horizontal">
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+            @Html.HiddenFor(model => model.Id)
+            @Html.HiddenFor(model => model.Name)
+            @Html.HiddenFor(model => model.IsAlreadyUsed)
+            <div class="form-group">
+                <div class="col-xs-6">
+                    @Html.LabelFor(model => model.ConfirmName)
+                    @Html.EditorFor(model => model.ConfirmName, new { htmlAttributes = new { @class = "form-control input-sm" } })
+                    @Html.ValidationMessageFor(model => model.ConfirmName, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-xs-6">
+                    <input type="submit" value="削除" class="btn btn-danger" />
+                </div>
+            </div>
+        </div>
+    }
+
+    @section Scripts {
+        @Scripts.Render("~/bundles/jqueryval")
+    }
+}
+
