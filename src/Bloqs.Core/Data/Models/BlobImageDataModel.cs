@@ -18,7 +18,7 @@ namespace Bloqs.Data.Models
         {
             AccountId = Hash(attributes.Container.Account.Id, attributes.Container.Account.CryptKey);
             ContainerId = Hash(attributes.Container.Id, attributes.Container.Account.CryptKey);
-            BlobId = Hash(attributes.Container.Id, attributes.Container.Account.CryptKey);            
+            BlobId = Hash(attributes.Id, attributes.Container.Account.CryptKey);
         }
 
         public BlobImageDataModel(Blob blob) : this((BlobAttributes)blob)
