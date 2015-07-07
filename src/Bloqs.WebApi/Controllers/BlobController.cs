@@ -43,7 +43,7 @@ namespace Bloqs.Controllers
             content.Headers.ContentDisposition = new ContentDispositionHeaderValue(blob.Properties.ContentDisposition ?? "attachment")
             {
                 ModificationDate = blob.Properties.LastModifiedUtcDateTime,
-                FileName = blob.Name,
+                FileName = HttpUtility.UrlEncode(blob.Name),
                 Size = blob.Properties.Length,
             };
             res.Content = content;
